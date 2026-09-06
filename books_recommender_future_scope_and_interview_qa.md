@@ -21,6 +21,12 @@ you can skim it once, out loud, before the interview.
   an artifact of popularity, not taste.
 - **Known limitations you fixed**: pandas 2.0 API break, missing similarity metric,
   self-recommendation artifact (book recommending itself at distance 0).
+- **Mixed hybrid, already built**: alongside the collaborative kNN results, the app now
+  shows a "More by the same author" row — a same-author lookup over the existing cleaned
+  data (`author` column), which is a content-based signal. The two are shown side by
+  side rather than merged into one ranked score — this is called a **mixed hybrid** in
+  recommender systems terms, the simplest hybrid pattern that still counts as one. See
+  Part 2.2 for why a merged (weighted) hybrid was deliberately left as future scope.
 - **Known limitation you did NOT fix (and can explain why)**: `fillna(0)` treats "never
   rated" identically to "rated zero." Since Book-Crossing ratings are 0–10, a real 0
   rating and an unrated cell become indistinguishable — this biases similarity toward
@@ -48,7 +54,12 @@ recommended).
 
 ### 2.2 Hybrid model (collaborative + content-based)
 
-Three standard ways to combine them, roughly in order of implementation effort:
+**Already built**: a mixed hybrid — the same-author results are computed independently
+and shown alongside the kNN results, with no shared score. That was the right scope for
+the time available: no new data source needed (author is already in the cleaned data),
+and no design decision required about how to compare a cosine similarity against a
+same-author boolean on one scale. The three approaches below are the next steps up in
+both value and implementation effort, roughly in order:
 
 1. **Weighted hybrid**: compute both similarity scores (collaborative cosine sim,
    content cosine sim), combine as `final_score = α * collab_sim + (1-α) * content_sim`.
@@ -186,6 +197,15 @@ the Rye, "The Da Vinci Code" → Angels & Demons as the closest match — both a
 of result a human would recognize as sensible), with the explicit caveat that qualitative
 spot-checks aren't a substitute for a real offline evaluation.
 
+**Q: You mentioned a hybrid — what did you actually build, and why not merge the scores?**
+A mixed hybrid: same-author results computed independently from the collaborative kNN
+results and shown side by side, not merged into one ranking. I scoped it that way on
+purpose — merging a cosine similarity score with a same-author signal onto one scale is
+a real design decision (what weight, what if there's no author match, does it change per
+book), and I'd rather ship something small I can fully defend than a merged score I
+picked without a principled reason. Weighted or switching hybrid (Part 2.2) is the
+natural next step once there's time to validate the blend.
+
 **Q: Is kNN a good long-term choice, or just a good starting point?**
 Good starting point — it's simple, interpretable (you can literally point to "these are
 the books with similar rating patterns"), and needs no training beyond an index build.
@@ -207,7 +227,9 @@ button click).
 
 1. Offline evaluation harness (Precision@k/Recall@k on a held-out split) — you can't
    improve or defend the model without this.
-2. Switching hybrid: content-based fallback for cold-start items/users.
+2. Weighted or switching hybrid: merge the already-built same-author signal with the
+   collaborative score instead of showing them side by side, and use it as a genuine
+   cold-start fallback for items/users with no rating history.
 3. Move dense pivot table → sparse matrix, add an ANN index (start with `hnswlib` or
    FAISS since they're drop-in for what `NearestNeighbors` already does).
 4. Matrix factorization (implicit/ALS) as the next model iteration — better use of
