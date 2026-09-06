@@ -75,6 +75,27 @@ class Recommendation:
         
 
     
+    def recommend_by_author(self, book_name, max_results=5):
+        try:
+            final_rating = load_pickle(self.recommendation_config.final_rating_serialized_objects)
+            match = final_rating[final_rating['title'] == book_name]
+            if match.empty:
+                return [], []
+
+            author = match.iloc[0]['author']
+            same_author = final_rating[
+                (final_rating['author'] == author) & (final_rating['title'] != book_name)
+            ].drop_duplicates('title')
+
+            books = same_author['title'].head(max_results).tolist()
+            poster_url = same_author['image_url'].head(max_results).tolist()
+            return books, poster_url
+
+        except Exception as e:
+            raise AppException(e, sys) from e
+
+
+
     def train_engine(self):
         try:
             obj = TrainingPipeline()
@@ -100,6 +121,23 @@ class Recommendation:
 
 
 
+    def author_recommendations_engine(self, selected_books):
+        try:
+            author_books, author_posters = self.recommend_by_author(selected_books)
+            if not author_books:
+                return
+
+            st.subheader("More by the same author")
+            columns = st.columns(len(author_books))
+            for col, book, url in zip(columns, author_books, author_posters):
+                with col:
+                    st.text(book)
+                    st.image(url)
+        except Exception as e:
+            raise AppException(e, sys) from e
+
+
+
 if __name__ == "__main__":
     st.header('End to End Books Recommender System')
     st.text("This is a collaborative filtering based recommendation system!")
@@ -118,3 +156,4 @@ if __name__ == "__main__":
     #recommendation
     if st.button('Show Recommendation'):
         obj.recommendations_engine(selected_books)
+        obj.author_recommendations_engine(selected_books)
