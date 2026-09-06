@@ -1,0 +1,25 @@
+1. Learning Outcome:
+   - Master the end-to-end Machine Learning lifecycle for Recommender Systems.
+   - Learn to build and manage modular ML pipelines (Ingestion, Validation, Transformation, Training).
+   - Understand how to deploy ML models as interactive web applications using Streamlit.
+   - Gain experience in Collaborative Filtering and Nearest Neighbors algorithms.
+   - Implement data processing techniques using Pandas and NumPy.
+   - Learn containerization of ML applications using Docker.
+
+2. What you will build:
+   - An "End-to-End Books Recommender System" capable of suggesting books based on user interests or similar books.
+   - An automated ML Pipeline that handles data ingestion, validation, preprocessing, and model training (K-Nearest Neighbors).
+   - A user-friendly Web Application tailored for real-time recommendations and poster fetching.
+   - A Dockerized application ready for cloud deployment (AWS/Azure).
+
+3. Prerequisite:
+   - Proficiency in Python programming.
+   - Fundamental understanding of Machine Learning concepts (Clustering/KNN) and Data Science.
+   - Basic familiarity with Git and command-line tools.
+
+4. Technologies:
+   - Programming Language: Python
+   - Web Framework: Streamlit
+   - Machine Learning Libraries: Scikit-learn, Pandas, NumPy
+   - Data Processing: Pickle, PyYAML
+   - MLOps & Deployment: Docker, Modular Pipeline Architecture
